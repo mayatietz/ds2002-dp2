@@ -40,7 +40,6 @@ for filename in os.listdir(directory):
 # insert_many is used else insert_one is used
     if isinstance(d, list):
       try:
-        
         collection.insert_many(d, ordered=False)
         count = count + 1
       except Exception as e:
@@ -52,7 +51,6 @@ for filename in os.listdir(directory):
       except Exception as e:
         print(e, "ERROR when importing ONE into Mongo")
 
-#print(" DICTIONARY IS", d)
 print(count)
 print(collection.count_documents({}))
 

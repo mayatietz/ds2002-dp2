@@ -12,34 +12,47 @@ db = client.met9krd
 collection = db.dp2
 
 directory = "data"
+count = 0
+
+collection.drop()
 
 for filename in os.listdir(directory):
   with open(os.path.join(directory, filename)) as f:
+   
+    # loading the json file
     try:
-      data = json.load(f)
+      file_data = json.load(f)
     except Exception as e:
       print(e, "error when loading", f)
-# If the JSON data is a list of records
-    if isinstance(data, list):
-                # Insert each record into the collection
-        for record in data:
-            collection.insert_one(record)
-            # If the JSON data is a single record
-    elif isinstance(data, dict):
-        collection.insert_one(data)
+
+    # create python dictionary
+    d = {}
+    for item in file_data:
+      #for num in item:
+          _id = item["_id"]
+          if _id in d:
+                 d[_id].append(item)
+          else:
+                 d[_id] = [item]
+    
+# Inserting the loaded data in the collection
+# if JSON contains data more than one entry
+# insert_many is used else insert_one is used
+    if isinstance(d, list):
+      try:
+        
+        collection.insert_many(d, ordered=False)
+        count = count + 1
+      except Exception as e:
+        print(e, "ERROR when importing MANY into Mongo")
     else:
-        print(f"Ignoring file {filename}: Invalid JSON format")
+      try:
+        collection.insert_one(d)
+        count = count + 1
+      except Exception as e:
+        print(e, "ERROR when importing ONE into Mongo")
 
-print("Import completed successfully!")
-
-    # if isinstance(file_data, list):
-    #   try:
-    #     collection.insert_many(file_data)
-    #   except Exception as e:
-    #     print(e, "when importing into Mongo")
-    # else:
-    #   try:
-    #     collection.insert_one(file_data)
-    #   except Exception as e:
-    #     print(e)
+#print(" DICTIONARY IS", d)
+print(count)
+print(collection.count_documents({}))
 
